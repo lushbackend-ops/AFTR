@@ -1,25 +1,19 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowUp } from "lucide-react";
-import { useLenis } from "@/components/providers/lenis-provider";
+import { useLenis, useLenisScroll } from "@/components/providers/lenis-provider";
 
 export function ScrollToTop() {
-  const { scrollTo, scrollProgress } = useLenis();
+  const { scrollTo } = useLenis();
   const [isVisible, setIsVisible] = useState(false);
+  const [progressPercent, setProgressPercent] = useState(0);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsVisible(window.scrollY > 300);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const progressPercent = Math.min(100, Math.max(0, Math.round(scrollProgress * 100)));
+  useLenisScroll((e) => {
+    setIsVisible(e.scroll > 300);
+    setProgressPercent(Math.min(100, Math.max(0, Math.round(e.progress * 100))));
+  });
 
   return (
     <AnimatePresence>

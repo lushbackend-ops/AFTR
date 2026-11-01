@@ -27,14 +27,17 @@ export default async function EventDetailPage({ params }: EventPageProps) {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
+    timeZone: 'Asia/Kolkata',
   });
 
   const formattedTime = `${startDate.toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: 'Asia/Kolkata',
   })} – ${endDate.toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: 'Asia/Kolkata',
   })}`;
 
   return (
@@ -79,11 +82,11 @@ export default async function EventDetailPage({ params }: EventPageProps) {
           <div className="flex flex-wrap items-center gap-6 text-xs text-theme-secondary font-sans tracking-wider pt-4 border-t border-theme">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-theme-primary" />
-              <span>{formattedDate}</span>
+              <span suppressHydrationWarning>{formattedDate}</span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-theme-primary" />
-              <span>{formattedTime}</span>
+              <span suppressHydrationWarning>{formattedTime}</span>
             </div>
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-theme-primary" />

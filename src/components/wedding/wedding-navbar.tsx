@@ -1,24 +1,21 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
-import { useLenis } from "@/components/providers/lenis-provider";
+import { useLenis, useLenisScroll } from "@/components/providers/lenis-provider";
 import { Menu, X } from "lucide-react";
 
 export function WeddingNavbar() {
-  const { scrollTo, scrollProgress } = useLenis();
+  const { scrollTo } = useLenis();
+  const [scrollProgress, setScrollProgress] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 40);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  useLenisScroll((e) => {
+    setIsScrolled(e.scroll > 40);
+    setScrollProgress(e.progress);
+  });
 
   const handleNavClick = (id: string) => {
     setMenuOpen(false);

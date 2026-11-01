@@ -33,8 +33,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="light h-full antialiased scroll-smooth" suppressHydrationWarning>
-      <body className="min-h-full flex flex-col bg-theme-base text-theme-primary font-mincho selection:bg-black/10 dark:selection:bg-white/20 transition-colors duration-300">
+    <html lang="en" className="light antialiased" suppressHydrationWarning>
+      <body className="min-h-screen flex flex-col bg-theme-base text-theme-primary font-mincho selection:bg-black/10 dark:selection:bg-white/20 transition-colors duration-300">
         <ThemeProvider>
           <AuthProvider>
             <LenisProvider>

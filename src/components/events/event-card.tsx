@@ -42,10 +42,12 @@ export function EventCard({ event }: { event: Event }) {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
+    timeZone: 'Asia/Kolkata',
   });
   const formattedTime = startDate.toLocaleTimeString('en-IN', {
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: 'Asia/Kolkata',
   });
 
   return (
@@ -114,9 +116,9 @@ export function EventCard({ event }: { event: Event }) {
             {/* Date line */}
             <div className="flex items-center gap-2 text-xs font-sans tracking-wider text-theme-tertiary">
               <Calendar className="w-3.5 h-3.5 text-theme-primary" />
-              <span>{formattedDate}</span>
+              <span suppressHydrationWarning>{formattedDate}</span>
               <span>•</span>
-              <span>{formattedTime}</span>
+              <span suppressHydrationWarning>{formattedTime}</span>
             </div>
 
             {/* Title */}

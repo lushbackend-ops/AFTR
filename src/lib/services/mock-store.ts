@@ -42,14 +42,14 @@ class AFTRDataStore {
       email: 'arjun@aftr.events',
       full_name: 'Arjun Mehta (AFTR India)',
       role: 'organiser',
-      created_at: new Date().toISOString(),
+      created_at: '2026-10-01T12:00:00.000Z',
     };
     const attendee: Profile = {
       id: '22222222-2222-2222-2222-222222222222',
       email: 'rhea@aftr.events',
       full_name: 'Rhea Kapoor',
       role: 'attendee',
-      created_at: new Date().toISOString(),
+      created_at: '2026-10-01T12:00:00.000Z',
     };
     this.profiles.set(organiser.id, organiser);
     this.profiles.set(attendee.id, attendee);
@@ -66,13 +66,13 @@ class AFTRDataStore {
         venue_name: 'Alsisar Mahal Heritage Palace',
         venue_address: 'Alsisar Village, Jhunjhunu District',
         city: 'Rajasthan',
-        start_time: new Date(Date.now() + 14 * 86400000 + 4 * 3600000).toISOString(),
-        end_time: new Date(Date.now() + 14 * 86400000 + 12 * 3600000).toISOString(),
+        start_time: '2026-12-18T18:00:00.000Z',
+        end_time: '2026-12-21T06:00:00.000Z',
         hero_image: '/images/events/techno-warehouse.jpg',
         capacity: 650,
         status: 'published',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        created_at: '2026-10-01T12:00:00.000Z',
+        updated_at: '2026-10-01T12:00:00.000Z',
       },
       {
         id: 'e2222222-2222-2222-2222-222222222222',
@@ -84,13 +84,13 @@ class AFTRDataStore {
         venue_name: 'Embassy International Forest Grounds',
         venue_address: 'Tarahunise Post, North Bengaluru',
         city: 'Bengaluru',
-        start_time: new Date(Date.now() + 21 * 86400000).toISOString(),
-        end_time: new Date(Date.now() + 21 * 86400000 + 5 * 3600000).toISOString(),
+        start_time: '2026-12-12T14:00:00.000Z',
+        end_time: '2026-12-13T23:00:00.000Z',
         hero_image: '/images/events/fashion-gala.jpg',
         capacity: 450,
         status: 'published',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        created_at: '2026-10-01T12:00:00.000Z',
+        updated_at: '2026-10-01T12:00:00.000Z',
       },
       {
         id: 'e3333333-3333-3333-3333-333333333333',
@@ -102,13 +102,13 @@ class AFTRDataStore {
         venue_name: 'Vagator Cliffside Amphitheatre',
         venue_address: 'Ozran Beach Road, Anjuna',
         city: 'Goa',
-        start_time: new Date(Date.now() + 7 * 86400000 + 2 * 3600000).toISOString(),
-        end_time: new Date(Date.now() + 7 * 86400000 + 6 * 3600000).toISOString(),
+        start_time: '2026-12-28T16:30:00.000Z',
+        end_time: '2026-12-29T04:00:00.000Z',
         hero_image: '/images/events/jazz-lounge.jpg',
         capacity: 350,
         status: 'published',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        created_at: '2026-10-01T12:00:00.000Z',
+        updated_at: '2026-10-01T12:00:00.000Z',
       },
       {
         id: 'e4444444-4444-4444-4444-444444444444',
@@ -120,13 +120,13 @@ class AFTRDataStore {
         venue_name: 'Mehboob Studios Soundstage 3',
         venue_address: 'Hill Road, Bandra West',
         city: 'Mumbai',
-        start_time: new Date(Date.now() + 30 * 86400000).toISOString(),
-        end_time: new Date(Date.now() + 30 * 86400000 + 8 * 3600000).toISOString(),
+        start_time: '2027-01-09T14:30:00.000Z',
+        end_time: '2027-01-09T22:30:00.000Z',
         hero_image: '/images/events/digital-art.jpg',
         capacity: 200,
         status: 'published',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        created_at: '2026-10-01T12:00:00.000Z',
+        updated_at: '2026-10-01T12:00:00.000Z',
       },
     ];
 
@@ -143,9 +143,9 @@ class AFTRDataStore {
         price_cents: 950000, // ₹9,500
         total_capacity: 400,
         remaining_capacity: 180,
-        sale_start: new Date(Date.now() - 2 * 86400000).toISOString(),
-        sale_end: new Date(Date.now() + 14 * 86400000).toISOString(),
-        created_at: new Date().toISOString(),
+        sale_start: '2026-10-01T00:00:00.000Z',
+        sale_end: '2026-12-18T18:00:00.000Z',
+        created_at: '2026-10-01T12:00:00.000Z',
       },
       {
         id: 't1111111-1111-1111-1111-111111111112',
@@ -155,9 +155,9 @@ class AFTRDataStore {
         price_cents: 2200000, // ₹22,000
         total_capacity: 150,
         remaining_capacity: 42,
-        sale_start: new Date(Date.now() - 2 * 86400000).toISOString(),
-        sale_end: new Date(Date.now() + 14 * 86400000).toISOString(),
-        created_at: new Date().toISOString(),
+        sale_start: '2026-10-01T00:00:00.000Z',
+        sale_end: '2026-12-18T18:00:00.000Z',
+        created_at: '2026-10-01T12:00:00.000Z',
       },
       {
         id: 't1111111-1111-1111-1111-111111111113',
@@ -167,9 +167,9 @@ class AFTRDataStore {
         price_cents: 5500000, // ₹55,000
         total_capacity: 100,
         remaining_capacity: 8,
-        sale_start: new Date(Date.now() - 2 * 86400000).toISOString(),
-        sale_end: new Date(Date.now() + 14 * 86400000).toISOString(),
-        created_at: new Date().toISOString(),
+        sale_start: '2026-10-01T00:00:00.000Z',
+        sale_end: '2026-12-18T18:00:00.000Z',
+        created_at: '2026-10-01T12:00:00.000Z',
       },
       // ECHOES OF EARTH
       {
@@ -180,9 +180,9 @@ class AFTRDataStore {
         price_cents: 450000, // ₹4,500
         total_capacity: 350,
         remaining_capacity: 190,
-        sale_start: new Date(Date.now() - 5 * 86400000).toISOString(),
-        sale_end: new Date(Date.now() + 21 * 86400000).toISOString(),
-        created_at: new Date().toISOString(),
+        sale_start: '2026-10-01T00:00:00.000Z',
+        sale_end: '2026-12-12T14:00:00.000Z',
+        created_at: '2026-10-01T12:00:00.000Z',
       },
       {
         id: 't2222222-1111-1111-1111-111111111112',
@@ -192,9 +192,9 @@ class AFTRDataStore {
         price_cents: 950000, // ₹9,500
         total_capacity: 100,
         remaining_capacity: 34,
-        sale_start: new Date(Date.now() - 5 * 86400000).toISOString(),
-        sale_end: new Date(Date.now() + 21 * 86400000).toISOString(),
-        created_at: new Date().toISOString(),
+        sale_start: '2026-10-01T00:00:00.000Z',
+        sale_end: '2026-12-12T14:00:00.000Z',
+        created_at: '2026-10-01T12:00:00.000Z',
       },
       // NOCTURNAL COVE GOA
       {
@@ -205,9 +205,9 @@ class AFTRDataStore {
         price_cents: 350000, // ₹3,500
         total_capacity: 250,
         remaining_capacity: 88,
-        sale_start: new Date(Date.now() - 1 * 86400000).toISOString(),
-        sale_end: new Date(Date.now() + 7 * 86400000).toISOString(),
-        created_at: new Date().toISOString(),
+        sale_start: '2026-10-01T00:00:00.000Z',
+        sale_end: '2026-12-28T16:30:00.000Z',
+        created_at: '2026-10-01T12:00:00.000Z',
       },
       {
         id: 't3333333-1111-1111-1111-111111111112',
@@ -217,9 +217,9 @@ class AFTRDataStore {
         price_cents: 1200000, // ₹12,000
         total_capacity: 100,
         remaining_capacity: 18,
-        sale_start: new Date(Date.now() - 1 * 86400000).toISOString(),
-        sale_end: new Date(Date.now() + 7 * 86400000).toISOString(),
-        created_at: new Date().toISOString(),
+        sale_start: '2026-10-01T00:00:00.000Z',
+        sale_end: '2026-12-28T16:30:00.000Z',
+        created_at: '2026-10-01T12:00:00.000Z',
       },
       // VELVET BAITHAK MUMBAI
       {
@@ -230,9 +230,9 @@ class AFTRDataStore {
         price_cents: 480000, // ₹4,800
         total_capacity: 120,
         remaining_capacity: 26,
-        sale_start: new Date(Date.now() - 10 * 86400000).toISOString(),
-        sale_end: new Date(Date.now() + 30 * 86400000).toISOString(),
-        created_at: new Date().toISOString(),
+        sale_start: '2026-10-01T00:00:00.000Z',
+        sale_end: '2027-01-09T14:30:00.000Z',
+        created_at: '2026-10-01T12:00:00.000Z',
       },
       {
         id: 't4444444-1111-1111-1111-111111111112',
@@ -242,9 +242,9 @@ class AFTRDataStore {
         price_cents: 1100000, // ₹11,000
         total_capacity: 80,
         remaining_capacity: 12,
-        sale_start: new Date(Date.now() - 10 * 86400000).toISOString(),
-        sale_end: new Date(Date.now() + 30 * 86400000).toISOString(),
-        created_at: new Date().toISOString(),
+        sale_start: '2026-10-01T00:00:00.000Z',
+        sale_end: '2027-01-09T14:30:00.000Z',
+        created_at: '2026-10-01T12:00:00.000Z',
       },
     ];
 
@@ -258,7 +258,7 @@ class AFTRDataStore {
       total_cents: 16500,
       status: 'confirmed',
       idempotency_key: 'demo-seed-order-1',
-      created_at: new Date(Date.now() - 2 * 3600000).toISOString(),
+      created_at: '2026-10-25T14:00:00.000Z',
     };
     this.orders.set(order1.id, order1);
 
@@ -278,7 +278,7 @@ class AFTRDataStore {
       status: 'valid',
       checked_in_at: null,
       checked_in_by: null,
-      created_at: new Date(Date.now() - 2 * 3600000).toISOString(),
+      created_at: '2026-10-25T14:00:00.000Z',
     };
 
     const t2: Ticket = {
@@ -290,9 +290,9 @@ class AFTRDataStore {
       ticket_code: usedTicketCode,
       ticket_code_hash: this.hashTicketCode(usedTicketCode),
       status: 'used',
-      checked_in_at: new Date(Date.now() - 45 * 60000).toISOString(),
+      checked_in_at: '2026-10-25T15:15:00.000Z',
       checked_in_by: organiser.id,
-      created_at: new Date(Date.now() - 2 * 3600000).toISOString(),
+      created_at: '2026-10-25T14:00:00.000Z',
     };
 
     const t3: Ticket = {
@@ -306,7 +306,7 @@ class AFTRDataStore {
       status: 'cancelled',
       checked_in_at: null,
       checked_in_by: null,
-      created_at: new Date(Date.now() - 2 * 3600000).toISOString(),
+      created_at: '2026-10-25T14:00:00.000Z',
     };
 
     this.tickets.set(t1.id, t1);

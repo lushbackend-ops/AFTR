@@ -202,11 +202,12 @@ export default function OrganiserEventsPage() {
                       <div className="flex flex-wrap items-center gap-4 text-xs font-sans text-theme-secondary">
                         <div className="flex items-center gap-1.5">
                           <Calendar className="w-3.5 h-3.5 text-theme-primary" />
-                          <span>
+                          <span suppressHydrationWarning>
                             {startDate.toLocaleDateString('en-US', {
                               month: 'short',
                               day: 'numeric',
                               year: 'numeric',
+                              timeZone: 'Asia/Kolkata',
                             })}
                           </span>
                         </div>

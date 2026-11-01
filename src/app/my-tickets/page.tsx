@@ -148,10 +148,12 @@ export default function MyTicketsPage() {
                 month: 'short',
                 day: 'numeric',
                 year: 'numeric',
+                timeZone: 'Asia/Kolkata',
               });
               const formattedTime = eventDate.toLocaleTimeString('en-US', {
                 hour: '2-digit',
                 minute: '2-digit',
+                timeZone: 'Asia/Kolkata',
               });
 
               const isValid = ticket.status === 'valid';
@@ -193,7 +195,7 @@ export default function MyTicketsPage() {
                     <div className="space-y-1.5 text-xs text-theme-secondary font-sans tracking-wider">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-3.5 h-3.5 text-theme-primary" />
-                        <span>{formattedDate} • {formattedTime}</span>
+                        <span suppressHydrationWarning>{formattedDate} • {formattedTime}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <MapPin className="w-3.5 h-3.5 text-theme-primary" />

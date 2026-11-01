@@ -2,9 +2,13 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { ArrowUp } from 'lucide-react';
 import { ScrollLine } from '@/components/ui/scroll-lines';
+import { useLenis } from '@/components/providers/lenis-provider';
 
 export function Footer() {
+  const { scrollTo } = useLenis();
+
   return (
     <footer className="w-full bg-theme-base border-t border-theme py-20 px-6 sm:px-12 mt-auto transition-colors duration-300 relative z-20">
       <div className="max-w-7xl mx-auto space-y-12">
@@ -82,8 +86,17 @@ export function Footer() {
         </div>
 
         <div className="pt-8 border-t border-theme-subtle flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-sans tracking-wider text-theme-tertiary">
-          <p>© {new Date().getFullYear()} AFTR Collective. All rights reserved.</p>
+          <p suppressHydrationWarning>© {new Date().getFullYear()} AFTR Collective. All rights reserved.</p>
           <div className="flex items-center gap-6">
+            <button
+              onClick={() => scrollTo(0, { duration: 1.2 })}
+              className="flex items-center gap-2 hover:text-theme-primary transition-colors cursor-pointer focus:outline-none"
+              aria-label="Return to top"
+            >
+              <span>Back to Top</span>
+              <ArrowUp className="w-3.5 h-3.5" />
+            </button>
+            <span className="hidden sm:inline opacity-40">•</span>
             <span>Zen Old Mincho</span>
             <span>Adaptive Theme Engine</span>
             <span>SHA-256 Hashed Passes</span>

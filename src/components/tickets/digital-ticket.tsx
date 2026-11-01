@@ -29,10 +29,12 @@ export function DigitalTicket({ ticket }: { ticket: Ticket }) {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
+    timeZone: 'Asia/Kolkata',
   });
   const formattedTime = eventDate.toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: 'Asia/Kolkata',
   });
 
   const getStatusBadge = () => {
@@ -87,7 +89,7 @@ export function DigitalTicket({ ticket }: { ticket: Ticket }) {
           <div className="space-y-1.5 text-xs text-theme-secondary font-sans tracking-wider pt-2">
             <div className="flex items-center gap-2">
               <Calendar className="w-3.5 h-3.5 text-theme-primary" />
-              <span>{formattedDate} • {formattedTime}</span>
+              <span suppressHydrationWarning>{formattedDate} • {formattedTime}</span>
             </div>
             <div className="flex items-center gap-2">
               <MapPin className="w-3.5 h-3.5 text-theme-primary" />
