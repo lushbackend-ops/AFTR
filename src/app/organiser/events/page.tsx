@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Event } from '@/types/database';
 import { useAuth } from '@/lib/auth/auth-context';
+import { aftrStore } from '@/lib/services/mock-store';
 import { ScrollLine } from '@/components/ui/scroll-lines';
 import {
   Plus,
@@ -26,15 +27,13 @@ export default function OrganiserEventsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function loadEvents() {
+    function loadEvents() {
       setIsLoading(true);
       setError(null);
       try {
         const organiserId = user?.id || '11111111-1111-1111-1111-111111111111';
-        const res = await fetch(`/api/events?organiser_id=${organiserId}`);
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to fetch events');
-        setEvents(data.events || []);
+        const orgEvents = aftrStore.getEventsByOrganiser(organiserId);
+        setEvents(orgEvents);
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'Error loading events';
         setError(msg);
@@ -44,6 +43,7 @@ export default function OrganiserEventsPage() {
     }
 
     loadEvents();
+    return aftrStore.subscribe(loadEvents);
   }, [user?.id]);
 
   return (

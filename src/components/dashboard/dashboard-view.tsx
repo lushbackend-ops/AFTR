@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Event, DashboardMetrics, AttendeeExportRow } from '@/types/database';
 import { useAuth } from '@/lib/auth/auth-context';
+import { aftrStore, downloadAttendeeCSV } from '@/lib/services/mock-store';
 import { ScrollLine } from '@/components/ui/scroll-lines';
 import {
   IndianRupee,
@@ -61,19 +62,16 @@ export function DashboardView({ initialEventId }: { initialEventId?: string }) {
     setError(null);
     try {
       const organiserId = user?.id || '11111111-1111-1111-1111-111111111111';
-      const res = await fetch(
-        `/api/organiser/dashboard?event_id=${selectedEventId}&organiser_id=${organiserId}`
-      );
-      const data = await res.json();
+      const eventsList = aftrStore.getEventsByOrganiser(organiserId);
+      const activeEventId = selectedEventId || (eventsList[0]?.id ?? '');
+      const ev = aftrStore.getEventById(activeEventId) || eventsList[0] || null;
+      const calculatedMetrics = aftrStore.getDashboardMetrics(activeEventId, organiserId);
+      const attendeeList = aftrStore.getAttendeeExportRows(activeEventId, organiserId);
 
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to load metrics');
-      }
-
-      setEvents(data.events || []);
-      setCurrentEvent(data.event || null);
-      setMetrics(data.metrics || null);
-      setAttendees(data.attendees || []);
+      setEvents(eventsList);
+      setCurrentEvent(ev);
+      setMetrics(calculatedMetrics);
+      setAttendees(attendeeList);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error loading dashboard';
       setError(msg);
@@ -85,6 +83,10 @@ export function DashboardView({ initialEventId }: { initialEventId?: string }) {
 
   useEffect(() => {
     loadDashboard();
+    const unsubscribe = aftrStore.subscribe(() => {
+      loadDashboard();
+    });
+    return unsubscribe;
   }, [selectedEventId, user?.id]);
 
   // Handle Quick Manual Check-In
@@ -96,42 +98,33 @@ export function DashboardView({ initialEventId }: { initialEventId?: string }) {
     setCheckInFeedback(null);
 
     try {
-      const res = await fetch('/api/check-in', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ticket_code: code,
-          staff_id: currentEvent?.organiser_id || '11111111-1111-1111-1111-111111111111',
-          event_id: currentEvent?.id || selectedEventId,
-        }),
-      });
+      const staffId = currentEvent?.organiser_id || user?.id || '11111111-1111-1111-1111-111111111111';
+      const eventId = currentEvent?.id || selectedEventId;
+      const result = await aftrStore.checkInTicket(code, staffId, eventId);
 
-      const data = await res.json();
-
-      if (res.ok && data.status === 'valid') {
+      if (result.status === 'valid') {
         setCheckInFeedback({
           type: 'success',
-          message: `Verified: ${data.attendee_name || 'Attendee'} admitted successfully!`,
-          attendee: data.attendee_name,
-          tier: data.ticket_type,
+          message: `Verified: ${result.attendee_name || 'Attendee'} admitted successfully!`,
+          attendee: result.attendee_name,
+          tier: result.ticket_type,
           time: new Date().toLocaleTimeString(),
         });
         setManualCode('');
-        // Refresh metrics and attendee list in background
         loadDashboard(true);
-      } else if (data.status === 'already_used') {
+      } else if (result.status === 'already_used') {
         setCheckInFeedback({
           type: 'warning',
           message: `ALREADY SCANNED: Pass was checked in at ${
-            data.checked_in_at ? new Date(data.checked_in_at).toLocaleTimeString() : 'door'
+            result.checked_in_at ? new Date(result.checked_in_at).toLocaleTimeString() : 'door'
           }.`,
-          attendee: data.attendee_name,
-          tier: data.ticket_type,
+          attendee: result.attendee_name,
+          tier: result.ticket_type,
         });
       } else {
         setCheckInFeedback({
           type: 'error',
-          message: data.message || 'Invalid or unrecognized pass code.',
+          message: result.message || 'Invalid or unrecognized pass code.',
         });
       }
     } catch (err: unknown) {
@@ -234,14 +227,14 @@ export function DashboardView({ initialEventId }: { initialEventId?: string }) {
           </Link>
 
           {/* Export CSV */}
-          <a
-            href={`/api/organiser/export-csv?event_id=${selectedEventId}&organiser_id=${user?.id}`}
-            download
-            className="flex items-center gap-1.5 px-5 py-2.5 rounded-[50px] text-xs font-sans tracking-widest uppercase text-theme-secondary hover:text-theme-primary border border-theme hover:border-theme-accent transition-colors bg-theme-card shadow-sm"
+          <button
+            type="button"
+            onClick={() => downloadAttendeeCSV(selectedEventId, currentEvent?.title)}
+            className="flex items-center gap-1.5 px-5 py-2.5 rounded-[50px] text-xs font-sans tracking-widest uppercase text-theme-secondary hover:text-theme-primary border border-theme hover:border-theme-accent transition-colors bg-theme-card shadow-sm cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export CSV</span>
-          </a>
+          </button>
         </div>
       </div>
 
@@ -320,7 +313,7 @@ export function DashboardView({ initialEventId }: { initialEventId?: string }) {
             </p>
             <ScrollLine direction="horizontal" origin="right" />
             <p className="text-[10px] text-theme-tertiary font-sans">
-              Strictly locked by PostgreSQL concurrency
+              Strictly locked by atomic concurrency
             </p>
           </div>
         </div>

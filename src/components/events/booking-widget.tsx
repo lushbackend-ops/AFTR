@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Event } from '@/types/database';
 import { useAuth } from '@/lib/auth/auth-context';
+import { aftrStore } from '@/lib/services/mock-store';
 import { ShieldCheck, Plus, Minus, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
 import { ScrollLine } from '@/components/ui/scroll-lines';
 
@@ -56,25 +57,15 @@ export function BookingWidget({ event }: { event: Event }) {
     const idempotencyKey = `ord-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
     try {
-      const res = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          attendee_id: user?.id || '22222222-2222-2222-2222-222222222222',
-          event_id: event.id,
-          items,
-          idempotency_key: idempotencyKey,
-        }),
+      const result = await aftrStore.bookTickets({
+        attendee_id: user?.id || '22222222-2222-2222-2222-222222222222',
+        event_id: event.id,
+        items,
+        idempotency_key: idempotencyKey,
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to complete transaction');
-      }
-
       setBookingSuccess(true);
-      setConfirmedOrderId(data.order_id);
+      setConfirmedOrderId(result.order_id);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Booking failed. Capacity may have shifted.';
       setErrorMessage(msg);
@@ -251,7 +242,7 @@ export function BookingWidget({ event }: { event: Event }) {
         </button>
 
         <p className="text-[10px] text-center font-sans tracking-wider text-theme-tertiary">
-          Secured with PostgreSQL Row-Level Mutex • Immediate Hashed Issuance
+          Atomic Concurrency Allocation • Immediate Hashed Issuance
         </p>
       </div>
     </div>

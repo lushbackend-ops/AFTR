@@ -28,11 +28,11 @@ export function Footer() {
               </span>
             </div>
             <p className="text-sm font-mincho text-theme-secondary max-w-lg leading-relaxed">
-              AFTR is an exclusive platform dedicated to curated nocturnal sound sanctuaries, underground acoustics, and cultural gatherings. Powered by PostgreSQL row-level locks to ensure deterministic ticketing with zero overselling.
+              AFTR is an exclusive platform dedicated to curated nocturnal sound sanctuaries, underground acoustics, and cultural gatherings. Powered by atomic concurrency engines to ensure deterministic ticketing with zero overselling.
             </p>
             <div className="flex items-center gap-3 text-xs font-sans tracking-widest text-theme-tertiary pt-2">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span>PostgreSQL Row Locking • Deterministic Allocation • Camera Verification Ready</span>
+              <span>Atomic Concurrency • Deterministic Allocation • Camera Verification Ready</span>
             </div>
           </div>
 

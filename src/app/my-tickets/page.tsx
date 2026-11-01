@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Ticket as TicketType } from '@/types/database';
 import { useAuth } from '@/lib/auth/auth-context';
+import { aftrStore } from '@/lib/services/mock-store';
 import { ScrollLine, SectionScrollDivider } from '@/components/ui/scroll-lines';
 import { Ticket, Calendar, MapPin, CheckCircle2, Clock, XCircle, ArrowRight, AlertCircle, RefreshCw } from 'lucide-react';
 
@@ -14,17 +15,13 @@ export default function MyTicketsPage() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'valid' | 'used'>('all');
 
-  const fetchTickets = async () => {
+  const fetchTickets = () => {
     setIsLoading(true);
     setError(null);
     try {
       const attendeeId = user?.id || '22222222-2222-2222-2222-222222222222';
-      const res = await fetch(`/api/tickets/my?attendee_id=${attendeeId}`);
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to load tickets');
-      }
-      setTickets(data.tickets || []);
+      const attendeeTickets = aftrStore.getTicketsByAttendee(attendeeId);
+      setTickets(attendeeTickets);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error retrieving passes';
       setError(msg);
@@ -35,6 +32,7 @@ export default function MyTicketsPage() {
 
   useEffect(() => {
     fetchTickets();
+    return aftrStore.subscribe(fetchTickets);
   }, [user?.id]);
 
   const filteredTickets = tickets.filter((t) => {

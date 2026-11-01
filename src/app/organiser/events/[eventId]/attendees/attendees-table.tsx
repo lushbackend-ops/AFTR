@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { AttendeeExportRow } from '@/types/database';
 import { useAuth } from '@/lib/auth/auth-context';
+import { aftrStore, downloadAttendeeCSV } from '@/lib/services/mock-store';
 import {
   Search,
   Download,
@@ -29,6 +30,16 @@ export function AttendeesTable({ eventId, eventTitle, initialRows }: AttendeesTa
   const [statusFilter, setStatusFilter] = useState<'all' | 'valid' | 'used'>('all');
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
 
+  useEffect(() => {
+    const refreshData = () => {
+      const updated = aftrStore.getAttendeeExportRows(eventId, user?.id || '11111111-1111-1111-1111-111111111111');
+      setRows(updated);
+    };
+    refreshData();
+    const unsubscribe = aftrStore.subscribe(refreshData);
+    return unsubscribe;
+  }, [eventId, user?.id]);
+
   const filteredRows = useMemo(() => {
     return rows.filter((r) => {
       const matchSearch =
@@ -46,24 +57,12 @@ export function AttendeesTable({ eventId, eventTitle, initialRows }: AttendeesTa
   const totalCount = rows.length;
   const checkInRate = totalCount > 0 ? Math.round((checkedInCount / totalCount) * 100) : 0;
 
-  const exportUrl = `/api/organiser/export-csv?event_id=${eventId}&organiser_id=${
-    user?.id || '11111111-1111-1111-1111-111111111111'
-  }`;
-
   const handleInlineCheckIn = async (code: string) => {
     try {
-      const res = await fetch('/api/check-in', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ticket_code: code,
-          staff_id: user?.id || '11111111-1111-1111-1111-111111111111',
-          event_id: eventId,
-        }),
-      });
-      const data = await res.json();
-      if (res.ok && data.status === 'valid') {
-        setActionFeedback(`Admitted ${data.attendee_name} (${code})`);
+      const staffId = user?.id || '11111111-1111-1111-1111-111111111111';
+      const result = await aftrStore.checkInTicket(code, staffId, eventId);
+      if (result.status === 'valid') {
+        setActionFeedback(`Admitted ${result.attendee_name || code}`);
         setRows((prev) =>
           prev.map((r) =>
             r.ticket_code === code
@@ -71,6 +70,9 @@ export function AttendeesTable({ eventId, eventTitle, initialRows }: AttendeesTa
               : r
           )
         );
+        setTimeout(() => setActionFeedback(null), 4000);
+      } else {
+        setActionFeedback(`Scan result: ${result.message}`);
         setTimeout(() => setActionFeedback(null), 4000);
       }
     } catch {
@@ -150,14 +152,14 @@ export function AttendeesTable({ eventId, eventTitle, initialRows }: AttendeesTa
           </div>
 
           {/* CSV Export Button */}
-          <a
-            href={exportUrl}
-            download={`${eventTitle.toLowerCase().replace(/[^a-z0-9]/g, '-')}-attendees.csv`}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[50px] text-xs font-sans tracking-wider uppercase font-medium bg-theme-subtle hover:bg-theme-card text-theme-secondary hover:text-theme-primary border border-theme transition-colors shadow-sm"
+          <button
+            type="button"
+            onClick={() => downloadAttendeeCSV(eventId, eventTitle)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[50px] text-xs font-sans tracking-wider uppercase font-medium bg-theme-subtle hover:bg-theme-card text-theme-secondary hover:text-theme-primary border border-theme transition-colors shadow-sm cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export CSV</span>
-          </a>
+          </button>
 
           {/* Quick Scanner Link */}
           <Link

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth/auth-context';
+import { aftrStore } from '@/lib/services/mock-store';
 import { ScrollLine } from '@/components/ui/scroll-lines';
 import {
   ArrowLeft,
@@ -106,10 +107,8 @@ export default function CreateEventPage() {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch('/api/events', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const newEvent = aftrStore.createEvent(
+        {
           organiser_id: user?.id || '11111111-1111-1111-1111-111111111111',
           title,
           slug,
@@ -122,24 +121,21 @@ export default function CreateEventPage() {
           end_time: new Date(endTime).toISOString(),
           hero_image: heroImage,
           capacity: finalCapacity,
-          ticket_types: ticketTiers.map((t) => ({
-            name: t.name,
-            description: t.description,
-            price_cents: Number(t.price_cents),
-            total_capacity: Number(t.total_capacity),
-            sale_start: new Date(Date.now() - 3600000).toISOString(),
-            sale_end: new Date(endTime).toISOString(),
-          })),
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to create event');
-      }
+          status: 'published',
+        },
+        ticketTiers.map((t) => ({
+          name: t.name,
+          description: t.description,
+          price_cents: Number(t.price_cents),
+          total_capacity: Number(t.total_capacity),
+          remaining_capacity: Number(t.total_capacity),
+          sale_start: '2026-10-01T00:00:00.000Z',
+          sale_end: new Date(endTime).toISOString(),
+        }))
+      );
 
       // Navigate to the newly created event directly in the operational dashboard
-      router.push(`/organiser?event_id=${data.event.id}`);
+      router.push(`/organiser?event_id=${newEvent.id}`);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error creating gathering';
       setError(msg);
@@ -197,7 +193,7 @@ export default function CreateEventPage() {
             Curate a New Gathering
           </h1>
           <p className="text-sm font-mincho text-theme-secondary leading-relaxed">
-            Define venue architecture, acoustic discipline, and allocate ticket tiers protected by PostgreSQL row-level locks.
+            Define venue architecture, acoustic discipline, and allocate ticket tiers protected by atomic concurrency allocation.
           </p>
         </div>
 

@@ -278,15 +278,15 @@ export default function HomePage() {
             </div>
 
             <h2 className="font-mincho text-3xl sm:text-5xl text-theme-primary font-normal leading-tight">
-              Row-Level Locks.
+              Atomic Allocation.
               <br />
               Zero Overselling.
             </h2>
 
             <p className="font-mincho text-sm sm:text-base text-theme-secondary leading-relaxed">
               Eliminate post-payment cancellations and double-booking errors common during high-demand festival drops.
-              PostgreSQL <code className="text-xs bg-theme-card px-2 py-1 border border-theme text-theme-primary font-mono">SELECT ... FOR UPDATE</code> row-level locks
-              guarantee strict inventory integrity under millisecond concurrent access.
+              Our deterministic <code className="text-xs bg-theme-card px-2 py-1 border border-theme text-theme-primary font-mono">Atomic Mutex Engine</code>
+              guarantees strict inventory integrity under millisecond concurrent access.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">

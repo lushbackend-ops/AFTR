@@ -1,7 +1,22 @@
 import { Profile, Event, TicketType, Order, Ticket, BookingRequest, BookingResult, CheckInResult, DashboardMetrics, AttendeeExportRow } from '@/types/database';
 import crypto from 'crypto';
 
-// In-memory persistent database for offline development, automated tests, and instant demo preview
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    try {
+      return crypto.randomUUID();
+    } catch {
+      // fallback below
+    }
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+// In-memory & client-persisted store for 100% frontend standalone operation
 class AFTRDataStore {
   private profiles: Map<string, Profile> = new Map();
   private events: Map<string, Event> = new Map();
@@ -9,11 +24,69 @@ class AFTRDataStore {
   private orders: Map<string, Order> = new Map();
   private tickets: Map<string, Ticket> = new Map();
 
-  // Concurrency Mutex locks to emulate Postgres ROW-LEVEL LOCKING (FOR UPDATE)
+  // Atomic Mutex locks to emulate transaction locking
   private locks: Map<string, Promise<void>> = new Map();
+  private listeners: Set<() => void> = new Set();
+  private STORAGE_KEY = 'aftr_client_store_v1';
 
   constructor() {
     this.seedInitialData();
+    if (typeof window !== 'undefined') {
+      this.loadFromStorage();
+    }
+  }
+
+  public subscribe(listener: () => void): () => void {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+
+  private notify() {
+    this.listeners.forEach((l) => {
+      try {
+        l();
+      } catch (err) {
+        console.error(err);
+      }
+    });
+  }
+
+  private loadFromStorage(): boolean {
+    if (typeof window === 'undefined') return false;
+    try {
+      const data = localStorage.getItem(this.STORAGE_KEY);
+      if (!data) return false;
+      const parsed = JSON.parse(data);
+      if (!parsed.events || !parsed.ticketTypes) return false;
+
+      this.events = new Map(parsed.events);
+      this.ticketTypes = new Map(parsed.ticketTypes);
+      this.orders = new Map(parsed.orders || []);
+      this.tickets = new Map(parsed.tickets || []);
+      this.profiles = new Map(parsed.profiles || []);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private saveToStorage() {
+    if (typeof window === 'undefined') return;
+    try {
+      const data = {
+        events: Array.from(this.events.entries()),
+        ticketTypes: Array.from(this.ticketTypes.entries()),
+        orders: Array.from(this.orders.entries()),
+        tickets: Array.from(this.tickets.entries()),
+        profiles: Array.from(this.profiles.entries()),
+      };
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+      this.notify();
+    } catch (e) {
+      console.warn('LocalStorage save error', e);
+    }
   }
 
   private async acquireLock(key: string): Promise<() => void> {
@@ -32,7 +105,25 @@ class AFTRDataStore {
   }
 
   private hashTicketCode(code: string): string {
-    return crypto.createHash('sha256').update(code.trim()).digest('hex');
+    const trimmed = code.trim();
+    if (typeof crypto !== 'undefined' && typeof (crypto as any).createHash === 'function') {
+      try {
+        return (crypto as any).createHash('sha256').update(trimmed).digest('hex');
+      } catch {
+        // Fallback below
+      }
+    }
+    let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+    for (let i = 0; i < trimmed.length; i++) {
+      const ch = trimmed.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761);
+      h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    const hexPart1 = (h1 >>> 0).toString(16).padStart(8, '0');
+    const hexPart2 = (h2 >>> 0).toString(16).padStart(8, '0');
+    return (hexPart1 + hexPart2 + hexPart1 + hexPart2 + hexPart1 + hexPart2 + hexPart1 + hexPart2).slice(0, 64);
   }
 
   public seedInitialData() {
@@ -401,8 +492,12 @@ class AFTRDataStore {
       }));
   }
 
+  public getEventsByOrganiser(organiserId: string): Event[] {
+    return this.getOrganiserEvents(organiserId);
+  }
+
   public createEvent(eventData: Omit<Event, 'id' | 'created_at' | 'updated_at'>, ticketTypesData: Array<Omit<TicketType, 'id' | 'event_id' | 'created_at'>>): Event {
-    const eventId = crypto.randomUUID();
+    const eventId = generateUUID();
     const newEvent: Event = {
       ...eventData,
       id: eventId,
@@ -412,7 +507,7 @@ class AFTRDataStore {
     this.events.set(eventId, newEvent);
 
     ticketTypesData.forEach((tt) => {
-      const ttId = crypto.randomUUID();
+      const ttId = generateUUID();
       const newTT: TicketType = {
         ...tt,
         id: ttId,
@@ -421,6 +516,8 @@ class AFTRDataStore {
       };
       this.ticketTypes.set(ttId, newTT);
     });
+
+    this.saveToStorage();
 
     return {
       ...newEvent,
@@ -439,6 +536,7 @@ class AFTRDataStore {
       updated_at: new Date().toISOString(),
     };
     this.events.set(eventId, updated);
+    this.saveToStorage();
     return updated;
   }
 
@@ -512,7 +610,7 @@ class AFTRDataStore {
       }
 
       // 6. Create Order
-      const orderId = crypto.randomUUID();
+      const orderId = generateUUID();
       const newOrder: Order = {
         id: orderId,
         attendee_id,
@@ -529,11 +627,13 @@ class AFTRDataStore {
 
       for (const item of items) {
         for (let i = 0; i < item.quantity; i++) {
-          const randomHex = crypto.randomBytes(6).toString('hex').toUpperCase();
-          const ticketCode = `AFTR-${randomHex.slice(0, 4)}-${randomHex.slice(4, 8)}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+          const r1 = Math.random().toString(36).substring(2, 6).toUpperCase();
+          const r2 = Math.random().toString(36).substring(2, 6).toUpperCase();
+          const r3 = Math.random().toString(36).substring(2, 6).toUpperCase();
+          const ticketCode = `AFTR-${r1}-${r2}-${r3}`;
           const codeHash = this.hashTicketCode(ticketCode);
 
-          const ticketId = crypto.randomUUID();
+          const ticketId = generateUUID();
           const newTicket: Ticket = {
             id: ticketId,
             order_id: orderId,
@@ -556,6 +656,8 @@ class AFTRDataStore {
           });
         }
       }
+
+      this.saveToStorage();
 
       return {
         success: true,
@@ -655,6 +757,7 @@ class AFTRDataStore {
       ticket.checked_in_at = new Date().toISOString();
       ticket.checked_in_by = staffId;
       this.tickets.set(ticket.id, ticket);
+      this.saveToStorage();
 
       return {
         status: 'valid',
@@ -754,4 +857,62 @@ declare global {
 export const aftrStore: AFTRDataStore = globalThis.__aftrStore || new AFTRDataStore();
 if (process.env.NODE_ENV !== 'production') {
   globalThis.__aftrStore = aftrStore;
+}
+
+export function downloadAttendeeCSV(eventId: string, eventTitle?: string) {
+  if (typeof window === 'undefined') return;
+  const event = aftrStore.getEventById(eventId);
+  const rows = aftrStore.getAttendeeExportRows(eventId, event?.organiser_id || '11111111-1111-1111-1111-111111111111');
+  const headers = [
+    'Ticket ID',
+    'Ticket Code',
+    'Attendee Name',
+    'Attendee Email',
+    'Ticket Tier',
+    'Order ID',
+    'Ticket Status',
+    'Booking Date',
+    'Price Paid (INR)',
+    'Checked-In Timestamp',
+  ];
+
+  function sanitize(val: unknown): string {
+    if (val === null || val === undefined) return '""';
+    let str = String(val).trim();
+    if (/^[=+\-@\t\r]/.test(str)) str = `'${str}`;
+    str = str.replace(/"/g, '""');
+    return `"${str}"`;
+  }
+
+  const csvContent = [
+    headers.map(sanitize).join(','),
+    ...rows.map((r) =>
+      [
+        r.ticket_id,
+        r.ticket_code,
+        r.attendee_name,
+        r.attendee_email,
+        r.ticket_type,
+        r.order_id,
+        r.status,
+        r.booking_date,
+        r.price_paid,
+        r.checked_in_at || 'Door Pending',
+      ]
+        .map(sanitize)
+        .join(',')
+    ),
+  ].join('\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  const title = eventTitle || event?.title || 'aftr-event';
+  const filename = `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-attendees.csv`;
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }

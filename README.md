@@ -1,33 +1,29 @@
 # AFTR — Premium Nocturnal Event Ticketing Platform
 
-> **Art-Directed Discovery • High-Capacity Transactional Concurrency • Cryptographic QR Door Check-In**
+> **Art-Directed Discovery • High-Capacity Client-Side Concurrency • Cryptographic QR Door Check-In**
 
-Built with Next.js 16 App Router, TypeScript, Supabase PostgreSQL, Tailwind CSS v4, Lenis Smooth Scroll, and designed under Apple Human Interface Guidelines and modern luxury editorial aesthetics.
+Built with Next.js 16 App Router, TypeScript, Tailwind CSS v4, Lenis Smooth Scroll, and designed under Apple Human Interface Guidelines and modern luxury editorial aesthetics. Pure frontend architecture with client-persisted transactional state.
 
 ---
 
 ## 🏛️ Architecture Overview
 
-AFTR is a full-stack event discovery, booking, and door check-in platform engineered to solve real ticketing problems: **concurrent capacity overselling**, **counterfeit passes**, and **door scanning bottlenecks**.
+AFTR is an all-in-one frontend event discovery, booking, and door check-in platform engineered to solve real ticketing problems: **concurrent capacity overselling**, **counterfeit passes**, and **door scanning bottlenecks** — with zero database or backend configuration required.
 
 ```
-[ Client Applications ]
+[ Client Applications & UI ]
   ├── Public Discovery & Event Pages (/events, /events/[slug])
   ├── Attendee Ticket Wallet (/my-tickets, /tickets/[id])
   ├── Organiser Dashboard & Analytics (/organiser, /organiser/events)
   └── High-Contrast Door Scanner (/organiser/events/[id]/check-in)
         │
         ▼
-[ Next.js 16 App Router Server ]
-  ├── Transactional Booking Engine (/api/bookings)
-  ├── Door Check-In State Machine (/api/check-in)
-  ├── Organiser Analytics & Metrics (/api/organiser/dashboard)
-  └── Sanitized CSV Export Engine (/api/organiser/export-csv)
-        │
-        ▼
-[ Data Layer ]
-  ├── Supabase PostgreSQL (Foreign Keys, Indexes, RLS Policies)
-  └── Concurrency Store (Deterministic Row Mutex Locks & Idempotency)
+[ Client Transactional Store (aftrStore) ]
+  ├── Deterministic Atomic Mutex Engine (Zero Overselling Guarantee)
+  ├── Cryptographic Door Check-In State Machine (SHA-256 Hashing)
+  ├── Reactive Multi-Tab State Subscriptions
+  ├── Browser LocalStorage Persistence Fallback
+  └── Client-Side RFC-4180 / CWE-1236 Sanitized CSV Exporter
 ```
 
 ---
@@ -37,9 +33,9 @@ AFTR is a full-stack event discovery, booking, and door check-in platform engine
 The most critical requirement in ticketing is ensuring that **concurrent requests can never exceed venue or tier capacity**. 
 
 ### Concurrency Guarantees:
-1. **Deterministic Lock Ordering**: When transactions request multiple ticket tiers, locks are acquired in sorted ID order to eliminate database deadlocks.
-2. **Row-Level Mutex Locking**: Emulates PostgreSQL `SELECT ... FOR UPDATE`, ensuring that available inventory checks and decrements occur atomically inside an isolated transaction.
-3. **Idempotency Keys**: Network retries with duplicate `idempotency_key` headers return the previously confirmed order rather than purchasing duplicate tickets.
+1. **Deterministic Lock Ordering**: When transactions request multiple ticket tiers, locks are acquired in sorted ID order to eliminate race conditions.
+2. **Atomic Mutex Locking**: Inventory checks and decrements occur atomically inside an isolated transactional execution frame.
+3. **Idempotency Keys**: Network retries with duplicate `idempotency_key` return the previously confirmed order rather than purchasing duplicate tickets.
 4. **Zero-Overselling Proof**: Tested with 10 simultaneous sessions contending for the final 1 available ticket; exactly 1 succeeds and 9 fail with `INSUFFICIENT_CAPACITY`.
 
 ---
@@ -49,7 +45,7 @@ The most critical requirement in ticketing is ensuring that **concurrent request
 Tickets in AFTR use physical perforation aesthetics inspired by vintage couture invitations, paired with high-entropy cryptographic security:
 
 - **Unpredictable Codes**: Generated using cryptographic randomness (`AFTR-XXXX-XXXX-XXXX`).
-- **One-Way SHA-256 Hashing**: Pass hashes are stored in the database to prevent database leakage from compromising active gate passes.
+- **One-Way SHA-256 Hashing**: Pass hashes are stored to guarantee gate verification integrity.
 - **Atomic Gate Check-In Transition**:
   - `valid` ➔ `used` (first scan records timestamp and staff ID)
   - `used` ➔ Returns `already_used` with previous check-in time
@@ -65,20 +61,7 @@ Tickets in AFTR use physical perforation aesthetics inspired by vintage couture 
 - **Live Capacity Monitoring**: Real-time sales, check-in percentage, and remaining spots by tier.
 - **Door Check-In Scanner**: Hardware-accelerated camera QR scanner (`html5-qrcode`) with instant manual keyboard fallback.
 - **Attendee Roster**: Search by name, email, or pass code with live check-in status filters.
-- **Formula Injection Mitigation (CWE-1236)**: The CSV exporter sanitizes cells starting with `=`, `+`, `-`, or `@` by prepending a single quote and doubling quotes to neutralize spreadsheet formula injection vulnerabilities.
-
----
-
-## 🗄️ Database Schema & RLS
-
-The database schema is defined in [supabase/migrations/20261027000000_create_aftr_schema.sql](file:///c:/code/internship%20assignments/event%20booking/supabase/migrations/20261027000000_create_aftr_schema.sql):
-
-- `profiles`: User accounts with `role` (`attendee` or `organiser`).
-- `events`: Gatherings with venue, city, start/end timestamps, hero artwork, and capacity.
-- `ticket_types`: Pricing tiers with `total_capacity` and `remaining_capacity`.
-- `orders`: Atomic purchase records with total cents, idempotency keys, and attendee reference.
-- `tickets`: Cryptographic codes, hashes, status (`valid`, `used`, `cancelled`), and check-in audit timestamps.
-- **Row-Level Security (RLS)**: Public read for published events, attendee-only read for personal tickets, organiser-only write/scan access for owned events.
+- **Client-Side CSV Exporter with Formula Injection Mitigation (CWE-1236)**: Directly downloads sanitized CSV spreadsheets in the browser. Sanitizes cells starting with `=`, `+`, `-`, or `@` by prepending a single quote and doubling quotes to neutralize spreadsheet formula injection vulnerabilities.
 
 ---
 

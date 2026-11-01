@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { CheckInResult } from '@/types/database';
 import { useAuth } from '@/lib/auth/auth-context';
+import { aftrStore } from '@/lib/services/mock-store';
 import { Camera, CameraOff, CheckCircle2, AlertTriangle, XCircle, ShieldAlert, RotateCcw, Keyboard, Loader2 } from 'lucide-react';
 import { ScrollLine } from '@/components/ui/scroll-lines';
 
@@ -24,17 +25,8 @@ export function TicketScanner({ eventId, eventTitle }: { eventId: string; eventT
     setCameraError(null);
 
     try {
-      const res = await fetch('/api/check-in', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ticket_code: code.trim(),
-          event_id: eventId,
-          staff_id: user?.role === 'organiser' ? user.id : '11111111-1111-1111-1111-111111111111',
-        }),
-      });
-
-      const data = await res.json();
+      const staffId = user?.role === 'organiser' ? user.id : '11111111-1111-1111-1111-111111111111';
+      const data = await aftrStore.checkInTicket(code.trim(), staffId, eventId);
       setScanResult(data);
 
       // Audio feedback cue for door staff
